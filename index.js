@@ -14,6 +14,10 @@ app.use(bodyParser.json());
 let routes = require("./routes");
 app.use("/api/v1", routes);
 
+app.get("/api/v1", (req,res)=>{
+  res.send("Api working fine!");
+});
+
 let PORT = process.env.PORT || 4545;
 app.listen(PORT, () =>
   console.log(`⚡⚡ Server listening to port ${PORT} ⚡⚡`)
