@@ -6,7 +6,7 @@ const request = require("request");
 const escapeStringRegexp = require("escape-string-regexp");
 
 //---------BEGIN-ADMINISTRATOR-----------
-//generate drive link
+//generate google drive link
 router.post("/add/drive", auth.admin, async (req, res) => {
   const fileId = req.body.id;
   const fileName = req.body.name;
@@ -76,6 +76,61 @@ router.post("/add/yandex", auth.admin, async (req, res) => {
               type: "yandex",
               downloads: 0,
               DDL: body.file,
+            });
+            link
+              .save()
+              .then((result) => {
+                res.json({
+                  msg: "Link was just Added",
+                  slug,
+                });
+              })
+              .catch((error) => {
+                res.json({ msg: "Error adding link" });
+                console.log(error);
+              });
+          }
+        }
+      );
+    }
+  } catch (error) {
+    res.json({ msg: "Internal Server Error" });
+  }
+});
+
+//generate opendrive link
+router.post("/add/opendrive", auth.admin, async (req, res) => {
+  const fileId = req.body.fileId;
+  try {
+    let link = await Link.findOne({ type: "opendrive", fileId });
+    if (link) {
+      res.json({
+        slug: link.slug,
+        msg: "Link Already Generated",
+      });
+    } else {
+      request(
+        "https://dev.opendrive.com/api/v1/file/info.json/" + fileId,
+        function (error, response, body) {
+          body = JSON.parse(body);
+          if (error) {
+            res.send({ msg: "Could not generate Link", error });
+          } else if (body.error) {
+            res.send({ msg: "File not found" });
+          } else {
+            const slug = encodeURI(
+              body.Name.replace(/[ \.\{\[\}\]]/g, "-")
+            ).toLowerCase();
+            link = new Link({
+              fileId,
+              slug,
+              fileName: body.Name,
+              createdOn: new Date(),
+              fileType: body.Extension,
+              size: body.Size,
+              type: "opendrive",
+              downloads: 0,
+              DDL: body.DownloadLink,
             });
             link
               .save()
