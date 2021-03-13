@@ -1,0 +1,7 @@
+GET http://localhost:4545/api/v1/links/yandex/castlevania-s03e02-1080p-nf-web-dl-ddp5-1(cm)-mp4
+Authorization: eyJhbGciOiJIUzI1NiJ9.Y21AYWRtaW4uY29t.AXkwLanH12X6HoIXdYIqnZZIJBMGWl2E9GSKPWjNUz8
+
+###
+
+GET https://cloud-api.yandex.net/v1/disk/public/resources?public_key=https://yadi.sk/i/PoeFTX4ryb3P1g
+
