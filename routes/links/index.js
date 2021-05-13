@@ -1,9 +1,12 @@
 const router = require("express").Router();
 const Link = require("../../mongodb/modals/links");
+const StreamTapeLink = require("../../mongodb/modals/streamTapeLink");
 const Download = require("../../mongodb/modals/downloads");
 const auth = require("../../auth");
 const request = require("request");
+const fetch = require("node-fetch");
 const escapeStringRegexp = require("escape-string-regexp");
+const { YandexAPI, StreamTapeAPI, OpenDriveAPI } = require("../../consts.js");
 
 //---------BEGIN-ADMINISTRATOR-----------
 //generate google drive link
@@ -54,8 +57,7 @@ router.post("/add/yandex", auth.admin, async (req, res) => {
       });
     } else {
       request(
-        "https://cloud-api.yandex.net/v1/disk/public/resources?public_key=" +
-          public_key,
+        YandexAPI.getFileResource(public_key),
         function (error, response, body) {
           body = JSON.parse(body);
           if (error) {
@@ -109,28 +111,98 @@ router.post("/add/opendrive", auth.admin, async (req, res) => {
         msg: "Link Already Generated",
       });
     } else {
+      request(OpenDriveAPI(fileId), function (error, response, body) {
+        body = JSON.parse(body);
+        if (error) {
+          res.send({ msg: "Could not generate Link", error });
+        } else if (body.error) {
+          res.send({ msg: "File not found" });
+        } else {
+          const slug = encodeURI(
+            body.Name.replace(/[ \.\{\[\}\]]/g, "-")
+          ).toLowerCase();
+          link = new Link({
+            fileId,
+            slug,
+            fileName: body.Name,
+            createdOn: new Date(),
+            fileType: body.Extension,
+            size: body.Size,
+            type: "opendrive",
+            downloads: 0,
+            DDL: body.DownloadLink,
+          });
+          link
+            .save()
+            .then((result) => {
+              res.json({
+                msg: "Link was just Added",
+                slug,
+              });
+            })
+            .catch((error) => {
+              res.json({ msg: "Error adding link" });
+              console.log(error);
+            });
+        }
+      });
+    }
+  } catch (error) {
+    res.json({ msg: "Internal Server Error" });
+  }
+});
+
+//generate streamtape link
+router.post("/generate/streamtape", auth.admin, async (req, res) => {
+  if (!Object.keys(req.body).length) {
+    res.json({
+      status: 400,
+      msg: "Bad Request",
+      error: "Message body is absent",
+    });
+    return;
+  }
+  const fileId = req.body.fileId;
+  try {
+    let link = await StreamTapeLink.findOne({ id: fileId });
+    if (link) {
+      res.json({
+        slug: link.slug,
+        msg: "Link Already Generated",
+      });
+    } else {
       request(
-        "https://dev.opendrive.com/api/v1/file/info.json/" + fileId,
-        function (error, response, body) {
+        StreamTapeAPI.getFileInfo(fileId),
+        async function (error, response, body) {
           body = JSON.parse(body);
           if (error) {
             res.send({ msg: "Could not generate Link", error });
           } else if (body.error) {
             res.send({ msg: "File not found" });
           } else {
-            const slug = encodeURI(
-              body.Name.replace(/[ \.\{\[\}\]]/g, "-")
+            let slug = encodeURI(
+              body.result[fileId].name.replace(/[ \.\{\[\}\]]/g, "-")
             ).toLowerCase();
-            link = new Link({
-              fileId,
+            let sameSlugExits = (await StreamTapeLink.find({ slug })).length;
+            solveSlugCollision = async (count) => {
+              sameSlugExits = (
+                await StreamTapeLink.find({
+                  slug: slug + (count == 1 ? "" : "-" + count),
+                })
+              ).length;
+              if (sameSlugExits) {
+                count++;
+                return solveSlugCollision(count);
+              }
+              slug += "-" + count;
+              return;
+            };
+            if (sameSlugExits) await solveSlugCollision(1);
+            link = new StreamTapeLink({
+              ...body.result[fileId],
               slug,
-              fileName: body.Name,
-              createdOn: new Date(),
-              fileType: body.Extension,
-              size: body.Size,
-              type: "opendrive",
               downloads: 0,
-              DDL: body.DownloadLink,
+              createdOn: new Date(),
             });
             link
               .save()
@@ -185,14 +257,62 @@ router.post("/search", auth.admin, (req, res) => {
 
 //---------BEGIN-PUBLIC-----------
 
+//get a streamtape download link
+router.get("/streamtape/:slug", async (REQ, RES) => {
+  const slug = REQ.params.slug;
+  const link = await StreamTapeLink.findOne({ slug });
+  if (link) {
+    fileId = link.id;
+    let response;
+    response = await (
+      await fetch(StreamTapeAPI.getDownloadTicket(fileId))
+    ).json();
+    if (response.status == 200) {
+      await new Promise((r) =>
+        setTimeout(r, (response.result.wait_time * 10 + 5) * 100)
+      ); // Waiting time required to use the generated download ticket
+      response = await (
+        await fetch(
+          StreamTapeAPI.getDownloadLink(fileId, response.result.ticket)
+        )
+      ).json();
+      console.log(response);
+      response.status == 200
+        ? RES.json({ status: 200, ddl: response.result.url })
+        : RES.json({
+            status: response.status,
+            msg: "Internal Server Error",
+            streamTapeMsg: response.msg,
+          });
+    } else {
+      RES.json({
+        status: response.status,
+        msg: "Internal Server Error",
+        streamTapeMsg: response.msg,
+      });
+    }
+  } else {
+    RES.json({ status: 200, linkExists: false });
+  }
+  /* .then((link) => {
+      request(StreamTapeAPI.,function (error, response, body) {
+              res.json({ linkExists: true, ...link.toObject() });
+
+      });
+    })
+    .catch((err) => {
+      res.json({ linkExists: false });
+    });
+    */
+});
+
 //get a link by type & slug params
 router.get("/:type/:slug", (req, res) => {
   const slug = req.params.slug;
   const type = req.params.type;
-  console.log(req.params);
   Link.findOne({ type, slug })
     .then((link) => {
-      res.json({ linkExists: true, ...link._doc });
+      res.json({ linkExists: true, ...link.toObject() });
     })
     .catch((err) => {
       res.json({ linkExists: false });

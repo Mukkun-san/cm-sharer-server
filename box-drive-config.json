@@ -1,0 +1,12 @@
+{
+  "boxAppSettings": {
+    "clientID": "zbn2w4bwnf5e7ua0yflx7n1z9nvgc92r",
+    "clientSecret": "zBz2anekOH0cwwozJS8DCdWSPRqBsIo8",
+    "appAuth": {
+      "publicKeyID": "9e17vdgk",
+      "privateKey": "-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIFDjBABgkqhkiG9w0BBQ0wMzAbBgkqhkiG9w0BBQwwDgQI5eSD0hdVfRwCAggA\nMBQGCCqGSIb3DQMHBAhvJdio2RwwPASCBMhy0PBCjeIDmI+WiF72j9/v3HEyYb2k\nuOW5hSq/aLMShk299zrSQZVk80boiDkSRu24QbGDLHkIZafBRwmyZy7+cxL+av5M\nhUANI/UpuTSJS3ftR5mbiWwxu+eVIqr0pDc19nSwMXc41MMBqbG449ez2TJZU/DL\nXorKjq5iBEysKVxrc1CaZcLstxidftKguJ8ZjCwfKqODrGGvZK+Md/kgoFq6aUSU\nx4GbDim7jFg9gfknHhSGi/eDK2uhJROPPdijpbCWHvUFkyj+rn5U38M7qlYVyPDG\nRkfNslXVUoXIfpUlLaf+rwW21jz94C+g5djfKCF4191vQbwCk4bHDoxuZUlUqHEJ\nYC1NfWKSXLGujC4Z/pMluAwZry6T+l8BrhWkd/ioeZZ3NH/XOWFnWDM6jXT5kNSs\nEjWejQVlt6UTrgq7Rddw0Fc7xKO1hne8ahH8389r0hP/awZeAZdMXysGche2nd/s\nJIxp+iHRmE4FNpKa6Oy5HgAhdD1xcKA2JN/4xT6th4rzXLJdDgOZXMjvl9g9bOqF\n+41Pbp/kTT2twHkn7/7SifTyA8vsQ7UZuWFq/G27ZnOhT9ljRgyB3NP3jy73jntg\nB6XP2hYtaqqDym6QROvTLlQBKcVLVHuXJUFrSPeqQYmqXg7iRcHZ7hfAxF92EZzo\nSRavN7rDsC6TeO8tjrUn1RCRSBCsMQwLvwjA/jIm9le4qSmEe+8P8stv0rgPVt1v\nOQoNqL7rXjevB93xPQnsP1wUcp+EEko3RDFSK/51xqYnXglGB5vNZ6foF1kSL7MR\n2bOZcmULFF+wPUOjTicOxAmDT6WLEpdI4LjidG0XPrMVaa009+lwHydQCvz6tF0Y\n8eSyMEj8t4WcBiP8H0vhEys5cCVvqcyZ2GE+I+Fx7P+ZGc5KkRNYzE5rPhyZ47u7\ncPXT7GL38K4a2gLJJlfb6VIS/gNMStH9MEaAlQtzz2J2ye3LzM2cvp6r6HwBqg/k\nLsb9B79VomFzkNwfSrXBqH+QU3konRboD1LPwrcOL5lPoCji5uBUVYJD1x0sXoW2\nrXvn2WolVvyfrjLNuyl8VygVKKseW//7hNxA8v+nGDIBcbQ6EZUFTJlytEsbVZiK\n79pP2xtRlzm2ReJglxUrY/wgYlOgmhJ24LOjXYPao9zxqwaUh3lIg/IvTLzHu9nv\ndzF9w9bXBYxEGvNfdJhTUAfyyfVTqE6/j/FUhY0dB2hOXDqTaVi01w6ZPJLS/Ntc\nnN9lW2MSH4acV+sDE81pa/XdWTeGBmvPPgaO3WaQ5E2yY9+QRDUcfFD3qRWixhd0\nV/QrqaT4p+1r2bnJtEqtEA9QF7UkxbysfJzJ/b2+grBwZHEKLKv/6l1ysIEengJk\n3ksuJZFca7tVdXlSw0B9GxDvTYQV42ehZDIGzi6UoW/ayfDWrG4WW0a3FB1KHWA5\nuJ+29XWvbRXvZ6gIoijAaMIVpQLAFXnFtWVm4LRYBNukCA62NkLPGpvmhdxYrzZ+\n/l8nLayZZdaohyxfJFCWxBYiZlEucu4ZN2cqaImRv0l+JEfCIBbA0ce435YcyvO3\neR9nAGAhuAzyYuQkLkALxnmSz/dy81vnqxTIdpcwlG+e+xhcFbbv9USsZKl2tEr3\nGLI=\n-----END ENCRYPTED PRIVATE KEY-----\n",
+      "passphrase": "93d604e14e904b2d060ded2524558bbc"
+    }
+  },
+  "enterpriseID": "813193143"
+}

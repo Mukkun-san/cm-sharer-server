@@ -38,7 +38,7 @@ router.post("/login", async (req, res) => {
         if (await bcrypt.compare(password, admin.password)) {
           const accessToken = jwt.sign(
             admin.email,
-            process.env.ACCESS_TOKEN_SECRET
+            process.env.ADMIN_TOKEN_SECRET
           );
           res.json({ authorized: true, accessToken });
         } else {
