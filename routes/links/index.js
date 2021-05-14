@@ -278,7 +278,11 @@ router.get("/streamtape/:slug", async (REQ, RES) => {
       ).json();
       console.log(response);
       response.status == 200
-        ? RES.json({ status: 200, ddl: response.result.url })
+        ? RES.json({
+            status: 200,
+            ddl: response.result.url,
+            ...link.toObject(),
+          })
         : RES.json({
             status: response.status,
             msg: "Internal Server Error",
