@@ -175,6 +175,7 @@ router.post("/generate/streamtape", auth.admin, async (req, res) => {
         StreamTapeAPI.getFileInfo(fileId),
         async function (error, response, body) {
           body = JSON.parse(body);
+          console.log(body, fileId);
           if (error) {
             res.send({ msg: "Could not generate Link", error });
           } else if (body.error) {
@@ -253,12 +254,58 @@ router.post("/search", auth.admin, (req, res) => {
     });
 });
 
+// search streamtape link
+router.post("/search/streamtape", auth.admin, (req, res) => {
+  StreamTapeLink.find({
+    name: { $regex: escapeStringRegexp(req.body.query), $options: "i" },
+  })
+    .sort({ createdOn: -1 })
+    .exec()
+    .then((docs) => {
+      console.log(docs);
+      res.json(docs);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(500);
+    });
+});
+
 //---------END-ADMINISTRATOR-----------
 
 //---------BEGIN-PUBLIC-----------
 
+// get a streamtape download link
+router.post("/ddl/streamtape", async (REQ, RES) => {
+  const fileId = REQ.body.fileId;
+  const ticket = REQ.body.ticket;
+  const _id = REQ.body._id;
+  console.log(fileId, ticket);
+  response = await (
+    await fetch(StreamTapeAPI.getDownloadLink(fileId, ticket))
+  ).json();
+
+  if (response.status == 200) {
+    let link = await StreamTapeLink.findOne({ _id });
+    if (!link) {
+      throw new Error();
+    }
+    link.downloads++;
+    await link.save();
+    RES.json({
+      status: 200,
+      ddl: response.result.url,
+    });
+  } else
+    RES.json({
+      status: response.status,
+      msg: "Internal Server Error",
+      streamTapeMsg: response.msg,
+    });
+});
+
 //get a streamtape download link
-router.get("/streamtape/:slug", async (REQ, RES) => {
+router.get("/fileinfo/streamtape/:slug", async (REQ, RES) => {
   const slug = REQ.params.slug;
   const link = await StreamTapeLink.findOne({ slug });
   if (link) {
@@ -268,26 +315,13 @@ router.get("/streamtape/:slug", async (REQ, RES) => {
       await fetch(StreamTapeAPI.getDownloadTicket(fileId))
     ).json();
     if (response.status == 200) {
-      await new Promise((r) =>
-        setTimeout(r, (response.result.wait_time * 10 + 5) * 100)
-      ); // Waiting time required to use the generated download ticket
-      response = await (
-        await fetch(
-          StreamTapeAPI.getDownloadLink(fileId, response.result.ticket)
-        )
-      ).json();
-      console.log(response);
-      response.status == 200
-        ? RES.json({
-            status: 200,
-            ddl: response.result.url,
-            ...link.toObject(),
-          })
-        : RES.json({
-            status: response.status,
-            msg: "Internal Server Error",
-            streamTapeMsg: response.msg,
-          });
+      console.log(response.result);
+      RES.json({
+        status: 200,
+        linkExists: true,
+        ...response.result,
+        ...link.toObject(),
+      });
     } else {
       RES.json({
         status: response.status,
@@ -298,16 +332,6 @@ router.get("/streamtape/:slug", async (REQ, RES) => {
   } else {
     RES.json({ status: 200, linkExists: false });
   }
-  /* .then((link) => {
-      request(StreamTapeAPI.,function (error, response, body) {
-              res.json({ linkExists: true, ...link.toObject() });
-
-      });
-    })
-    .catch((err) => {
-      res.json({ linkExists: false });
-    });
-    */
 });
 
 //get a link by type & slug params
@@ -325,22 +349,14 @@ router.get("/:type/:slug", (req, res) => {
 
 // save download info to db
 router.post("/download", async (req, res) => {
-  console.log(req.body);
-  const linkId = req.body._id;
-  const userId = req.body.userId || null;
+  const _id = req.body._id;
   try {
-    let link = await Link.findOne({ _id: linkId });
+    let link = await Link.findOne({ _id });
+    if (!link) {
+      throw new Error();
+    }
     console.log(link);
     link.downloads++;
-    const fileName = link.fileName;
-    const date = new Date();
-    let download = new Download({
-      linkId,
-      fileName,
-      userId,
-      date,
-    });
-    await download.save();
     await link.save();
     res.sendStatus(200);
   } catch (error) {
